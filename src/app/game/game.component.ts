@@ -57,7 +57,7 @@ export class GameComponent implements AfterViewInit {
 
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
-  constructor(ngxSmartModalService: NgxSmartModalService) { }
+  constructor(public ngxSmartModalService: NgxSmartModalService) { }
 
   @HostListener('window:load')
   load() {
@@ -67,7 +67,6 @@ export class GameComponent implements AfterViewInit {
     const canvas = this.myCanvas.nativeElement;
     this.context = canvas.getContext('2d');
     this.init();
-    const self = this;
   }
 
   ngAfterViewInit(): void {
@@ -78,10 +77,6 @@ export class GameComponent implements AfterViewInit {
         width: this.gameWidth + 'px',
         height: this.gameHeight + 'px'
     });
-  }
-
-  afterLoading(): void {
-    
   }
 
   loadAssets(): Promise<string> {
@@ -314,7 +309,7 @@ export class GameComponent implements AfterViewInit {
           this.skier.mapX -= this.skier.speed;
           this.placeNewObstacle(this.skier.direction);
         } else {
-          if(this.skier.direction !== 0) {
+          if (this.skier.direction !== 0) {
             this.skier.direction--;
           }
         }
@@ -341,13 +336,14 @@ export class GameComponent implements AfterViewInit {
         event.preventDefault();
         break;
       case KEY_CODE.SPACE_BAR:
-        
+        this.ngxSmartModalService.getModal('pauseModal').open();
         break;
     }
   }
 
   gameLoop(): void {
     this.context.save();
+    this.skier.speed += 0.05;
 
     // Retina support
     this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -366,12 +362,12 @@ export class GameComponent implements AfterViewInit {
 
     requestAnimationFrame(() => this.gameLoop());
 
-   
+
   }
 
   init(): void {
     const self = this;
-    
+
     this.loadAssets().then(function () {
       self.placeInitialObstacles();
       requestAnimationFrame(() => self.gameLoop());
