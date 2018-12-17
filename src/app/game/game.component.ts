@@ -3,6 +3,7 @@ import { Component, AfterViewInit, HostListener, Injectable, ViewChild, ElementR
 import * as _ from 'lodash';
 import * as $ from 'jquery';
 import { NgxSmartModalService } from 'ngx-smart-modal';
+import {LocalStorageService} from 'ngx-localstorage';
 
 export enum KEY_CODE {
   RIGHT_ARROW = 39,
@@ -74,12 +75,14 @@ export class GameComponent implements AfterViewInit {
   loadedAssets = [];
   gameWidth = window.innerWidth;
   gameHeight = window.innerHeight;
+  score = 0;
+  shouldSave = <boolean> false;
 
   context: CanvasRenderingContext2D;
 
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
-  constructor(public ngxSmartModalService: NgxSmartModalService) { }
+  constructor(public ngxSmartModalService: NgxSmartModalService, private _storageService: LocalStorageService) { }
 
   @HostListener('window:load')
   load() {
@@ -225,6 +228,18 @@ export class GameComponent implements AfterViewInit {
 
         this.placeNewObstacle(this.skier.direction);
         break;
+    }
+  }
+
+  calculateScore(): void {
+      this.score += 1 ;
+  }
+
+  saveScore(): void {
+    if (this.shouldSave) {
+      this._storageService.set(_.toString(_.now()), _.toString(this.score));
+      this.score = 0;
+      this.shouldSave = false;
     }
   }
 
@@ -402,7 +417,10 @@ export class GameComponent implements AfterViewInit {
     if (collision && !self.skier.jump) {
         this.skier.direction = 0;
         this.skier.speed = 8;
-
+        this.shouldSave = true;
+        return;
+    } else {
+      this.calculateScore();
     }
   }
 
@@ -453,16 +471,16 @@ export class GameComponent implements AfterViewInit {
         break;
       case KEY_CODE.SPACE_BAR:
         alert('Game paused');
-        // this.ngxSmartModalService.getModal('pauseModal').open();
         break;
     }
   }
 
+  // Sequence of events called every frame
   gameLoop(): void {
     this.context.save();
 
     // Speed up with every frame
-    this.skier.speed += 0.005;
+    this.skier.speed += 0.05;
 
     // Retina support
     this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -472,6 +490,8 @@ export class GameComponent implements AfterViewInit {
     this.moveSkier();
 
     this.checkIfSkierHitObstacle();
+
+    // this.saveScore();
 
     this.drawSkier();
 

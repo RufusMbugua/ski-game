@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { GameComponent } from './game/game.component';
 import { NgxSmartModalModule } from 'ngx-smart-modal';
+import {NgxLocalStorageModule} from 'ngx-localstorage';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { NgxSmartModalModule } from 'ngx-smart-modal';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    NgxSmartModalModule.forRoot()
+    NgxSmartModalModule.forRoot(),
+    NgxLocalStorageModule.forRoot({prefix: 'score'})
   ],
   providers: [],
   bootstrap: [AppComponent]
