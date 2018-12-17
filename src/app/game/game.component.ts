@@ -36,15 +36,37 @@ export class GameComponent implements AfterViewInit {
     'tree': '../assets/img/tree_1.png',
     'treeCluster': '../assets/img/tree_cluster.png',
     'rock1': '../assets/img/rock_1.png',
-    'rock2': '../assets/img/rock_2.png'
+    'rock2': '../assets/img/rock_2.png',
+    'jumpRamp': '../assets/img/jump_ramp.png',
+    'skierJump1': '../assets/img/skier_jump_1.png',
+    'skierJump2': '../assets/img/skier_jump_2.png',
+    'skierJump3': '../assets/img/skier_jump_3.png',
+    'skierJump4': '../assets/img/skier_jump_4.png',
+    'skierJump5': '../assets/img/skier_jump_5.png',
+    'rhinoLift': '../assets/img/rhino_lift.png',
+    'rhinoLiftOpenMouth': '../assets/img/rhino_lift_mouth_open.png',
+    'rhinoLiftEat1': '../assets/img/rhino_lift_eat_1.png',
+    'rhinoLiftEat2': '../assets/img/rhino_lift_eat_2.png',
+    'rhinoLiftEat3': '../assets/img/rhino_lift_eat_3.png',
+    'rhinoLiftEat4': '../assets/img/rhino_lift_eat_4.png'
   };
-  obstacleTypes = ['tree', 'treeCluster', 'rock1', 'rock2'];
+  obstacleTypes = ['tree', 'treeCluster', 'rock1', 'rock2', 'jumpRamp'];
 
   skier = {
     direction: <number>5,
     mapX: <number>0,
     mapY: <number>0,
-    speed: <number>8
+    speed: <number>4,
+    jump: <boolean>false,
+    animation: <number>0
+  };
+
+  rhino = {
+    animation: <number>0,
+    direction: <number>5,
+    mapX: <number>0,
+    mapY: <number>0,
+    speed: <number>9
   };
 
 
@@ -206,8 +228,31 @@ export class GameComponent implements AfterViewInit {
     }
   }
 
-  getAsset(): string {
+  moveRhino(): void {
+    switch (this.rhino.direction) {
+      case 2:
+        this.rhino.mapX -= Math.round(this.rhino.speed / 1.4142);
+        this.rhino.mapY += Math.round(this.rhino.speed / 1.4142);
+
+        this.placeNewObstacle(this.rhino.direction);
+        break;
+      case 3:
+        this.rhino.mapY += this.rhino.speed;
+
+        this.placeNewObstacle(this.rhino.direction);
+        break;
+      case 4:
+        this.rhino.mapX += this.rhino.speed / 1.4142;
+        this.rhino.mapY += this.rhino.speed / 1.4142;
+
+        this.placeNewObstacle(this.rhino.direction);
+        break;
+    }
+  }
+
+  getSkierAsset(): string {
     let skierAssetName = '';
+
     switch (this.skier.direction) {
       case 0:
         skierAssetName = 'skierCrash';
@@ -232,8 +277,70 @@ export class GameComponent implements AfterViewInit {
     return skierAssetName;
   }
 
+  getRhinoAsset(): string {
+    let rhinoAssetName = '';
+    switch (this.rhino.animation) {
+      case 0:
+        rhinoAssetName = 'rhinoLift';
+        break;
+      case 1:
+        rhinoAssetName = 'rhinoLiftOpenMouth';
+        break;
+      case 2:
+        rhinoAssetName = 'rhinoLiftEat1';
+        break;
+      case 3:
+        rhinoAssetName = 'rhinoLiftEat2';
+        break;
+      case 4:
+        rhinoAssetName = 'rhinoLiftEat2';
+        break;
+      case 5:
+        rhinoAssetName = 'rhinoLiftEat3';
+        break;
+      case 5:
+        rhinoAssetName = 'rhinoLiftEat4';
+        break;
+    }
+
+    return rhinoAssetName;
+  }
+
+  getJumpAsset(): string {
+    let skierAssetName = '';
+    switch (Math.floor(this.skier.animation / 10)) {
+      case 0:
+        skierAssetName = 'skierJump1';
+        break;
+      case 1:
+        skierAssetName = 'skierJump2';
+        break;
+      case 2:
+        skierAssetName = 'skierJump3';
+        break;
+      case 3:
+        skierAssetName = 'skierJump4';
+        break;
+      case 4:
+        skierAssetName = 'skierJump5';
+        this.skier.jump = false;
+        this.skier.animation = 0;
+        break;
+    }
+
+    return skierAssetName;
+  }
+
   drawSkier(): void {
-    const skierAssetName = this.getAsset();
+    let skierAssetName = '';
+    if (this.skier.jump) {
+       skierAssetName = this.getJumpAsset();
+       this.skier.animation += 1;
+    } else {
+       skierAssetName = this.getSkierAsset();
+    }
+
+
     const skierImage = this.loadedAssets[skierAssetName];
     const x = Math.round((this.gameWidth - skierImage.width) / 2);
     const y = Math.round((this.gameHeight - skierImage.height) / 2);
@@ -263,7 +370,7 @@ export class GameComponent implements AfterViewInit {
   }
 
   checkIfSkierHitObstacle(): void {
-    const skierAssetName = this.getAsset();
+    const skierAssetName = this.getSkierAsset();
     const skierImage = this.loadedAssets[skierAssetName];
     const skierRect = {
       left: this.skier.mapX + this.gameWidth / 2,
@@ -278,15 +385,24 @@ export class GameComponent implements AfterViewInit {
         left: obstacle.x,
         right: obstacle.x + obstacleImage.width,
         top: obstacle.y + obstacleImage.height - 5,
-        bottom: obstacle.y + obstacleImage.height
+        bottom: obstacle.y + obstacleImage.height,
+        type: obstacle.type
       };
 
-      return self.intersectRect(skierRect, obstacleRect);
+      if (self.intersectRect(skierRect, obstacleRect)) {
+        if (obstacleRect.type === 'jumpRamp') {
+          self.skier.jump = true;
+        }
+        return true;
+      } else {
+        return false;
+      }
     });
 
-    if (collision) {
-      this.skier.direction = 0;
-      this.skier.speed = 8;
+    if (collision && !self.skier.jump) {
+        this.skier.direction = 0;
+        this.skier.speed = 8;
+
     }
   }
 
@@ -336,14 +452,17 @@ export class GameComponent implements AfterViewInit {
         event.preventDefault();
         break;
       case KEY_CODE.SPACE_BAR:
-        this.ngxSmartModalService.getModal('pauseModal').open();
+        alert('Game paused');
+        // this.ngxSmartModalService.getModal('pauseModal').open();
         break;
     }
   }
 
   gameLoop(): void {
     this.context.save();
-    this.skier.speed += 0.05;
+
+    // Speed up with every frame
+    this.skier.speed += 0.005;
 
     // Retina support
     this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
