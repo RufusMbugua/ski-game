@@ -1,14 +1,17 @@
-import { Component, Input, AfterViewInit, HostListener, Injectable, ViewChild, ElementRef, Directive } from '@angular/core';
+import { Component, AfterViewInit, HostListener, Injectable, ViewChild, ElementRef } from '@angular/core';
 
 import * as _ from 'lodash';
 import * as $ from 'jquery';
+import { NgxSmartModalService } from 'ngx-smart-modal';
 
 export enum KEY_CODE {
   RIGHT_ARROW = 39,
   LEFT_ARROW = 37,
   UP_ARROW = 38,
-  DOWN_ARROW = 40
+  DOWN_ARROW = 40,
+  SPACE_BAR = 32
 }
+
 
 @Component({
   selector: 'app-game',
@@ -22,8 +25,6 @@ export enum KEY_CODE {
 
 
 export class GameComponent implements AfterViewInit {
-
-
 
   assetImages = {
     'skierCrash': '../assets/img/skier_crash.png',
@@ -49,61 +50,38 @@ export class GameComponent implements AfterViewInit {
 
   obstacles = [];
   loadedAssets = [];
-  gameWidth = <number>window.innerWidth;
-  gameHeight = <number>window.innerHeight;
+  gameWidth = window.innerWidth;
+  gameHeight = window.innerHeight;
 
   context: CanvasRenderingContext2D;
 
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
-  constructor() { }
+  constructor(ngxSmartModalService: NgxSmartModalService) { }
 
   @HostListener('window:load')
   load() {
     this.render();
   }
   render() {
-    this.context.clearRect(0, 0, 5, 5);
-    this.context.drawImage(this.loadedAssets['skierCrash'], 0, 0, 5, 5);
+    const canvas = this.myCanvas.nativeElement;
+    this.context = canvas.getContext('2d');
+    this.init();
+    const self = this;
   }
 
   ngAfterViewInit(): void {
-    const canvas = this.myCanvas.nativeElement;
-    this.context = canvas.getContext('2d');
-    const self = this;
-
-    this.loadAssets().then(function () {
-
-      self.placeInitialObstacles();
-
-      requestAnimationFrame(() => self.gameLoop());
-    }).catch(function (err) {
-      console.log(err)
+    $('canvas')
+    .attr('width', this.gameWidth * window.devicePixelRatio)
+    .attr('height', this.gameHeight * window.devicePixelRatio)
+    .css({
+        width: this.gameWidth + 'px',
+        height: this.gameHeight + 'px'
     });
   }
 
   afterLoading(): void {
-
-  }
-  public gameLoop(): void {
-    this.context.save();
-
-    // Retina support
-    this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-    this.clearCanvas();
-
-    this.moveSkier();
-
-    this.checkIfSkierHitObstacle();
-
-    this.drawSkier();
-
-    this.drawObstacles();
-
-    this.context.restore();
-
-    requestAnimationFrame(() => this.gameLoop());
+    
   }
 
   loadAssets(): Promise<string> {
@@ -262,10 +240,11 @@ export class GameComponent implements AfterViewInit {
   drawSkier(): void {
     const skierAssetName = this.getAsset();
     const skierImage = this.loadedAssets[skierAssetName];
-    const x = (this.gameWidth - skierImage.width) / 2;
-    const y = (this.gameHeight - skierImage.height) / 2
+    const x = Math.round((this.gameWidth - skierImage.width) / 2);
+    const y = Math.round((this.gameHeight - skierImage.height) / 2);
+
     this.context.drawImage(skierImage, x, y, skierImage.width, skierImage.height);
-    this.context.save();
+    // this.context.save();
   }
 
   drawObstacles(): void {
@@ -335,7 +314,9 @@ export class GameComponent implements AfterViewInit {
           this.skier.mapX -= this.skier.speed;
           this.placeNewObstacle(this.skier.direction);
         } else {
-          this.skier.direction--;
+          if(this.skier.direction !== 0) {
+            this.skier.direction--;
+          }
         }
         event.preventDefault();
         break;
@@ -359,7 +340,44 @@ export class GameComponent implements AfterViewInit {
         this.skier.direction = 3;
         event.preventDefault();
         break;
+      case KEY_CODE.SPACE_BAR:
+        
+        break;
     }
+  }
+
+  gameLoop(): void {
+    this.context.save();
+
+    // Retina support
+    this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    this.clearCanvas();
+
+    this.moveSkier();
+
+    this.checkIfSkierHitObstacle();
+
+    this.drawSkier();
+
+    this.drawObstacles();
+
+    this.context.restore();
+
+    requestAnimationFrame(() => this.gameLoop());
+
+   
+  }
+
+  init(): void {
+    const self = this;
+    
+    this.loadAssets().then(function () {
+      self.placeInitialObstacles();
+      requestAnimationFrame(() => self.gameLoop());
+    }).catch(function (err) {
+      console.log(err);
+    });
   }
 
 }
