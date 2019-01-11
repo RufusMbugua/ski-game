@@ -2,7 +2,7 @@ import { Component, AfterViewInit, HostListener, Injectable, ViewChild, ElementR
 
 import * as _ from 'lodash';
 import * as $ from 'jquery';
-import { NgxSmartModalService } from 'ngx-smart-modal';
+// import { NgxSmartModalService } from 'ngx-smart-modal';
 import {LocalStorageService} from 'ngx-localstorage';
 
 export enum KEY_CODE {
@@ -82,7 +82,7 @@ export class GameComponent implements AfterViewInit {
 
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
-  constructor(public ngxSmartModalService: NgxSmartModalService, private _storageService: LocalStorageService) { }
+  constructor(private _storageService: LocalStorageService) { }
 
   @HostListener('window:load')
   load() {
