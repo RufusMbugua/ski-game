@@ -4,3 +4,7 @@ This object handles the skier's movement and current game state.
 
 ## Available functions
 
+- moverSkier()
+- drawSkier()
+- checkIfSkierHitObstacle()
+- getSkierAsset()

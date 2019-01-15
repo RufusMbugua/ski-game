@@ -5,7 +5,7 @@ This is an iteration of the Ski Game translated into Angular 7 to allow for test
 ## Objects
 
 - [Skier](Skier.md)
-- Obstacle
+- [Obstacle](Obstacle.md)
 
 ## Skier Actions/Interactions
 
