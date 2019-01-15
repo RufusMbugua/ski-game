@@ -5,6 +5,7 @@ import * as $ from 'jquery';
 // import { NgxSmartModalService } from 'ngx-smart-modal';
 import {LocalStorageService} from 'ngx-localstorage';
 
+/** */
 export enum KEY_CODE {
   RIGHT_ARROW = 39,
   LEFT_ARROW = 37,
@@ -13,18 +14,23 @@ export enum KEY_CODE {
   SPACE_BAR = 32
 }
 
-
+/**
+ * Component Declaration
+ */
 @Component({
   selector: 'app-game',
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
 
+
 @Injectable({
   providedIn: 'root'
 })
 
-
+/**
+ * GameComponent Class
+ */
 export class GameComponent implements AfterViewInit {
 
   assetImages = {
@@ -53,6 +59,11 @@ export class GameComponent implements AfterViewInit {
   };
   obstacleTypes = ['tree', 'treeCluster', 'rock1', 'rock2', 'jumpRamp'];
 
+  /**
+   * The Skier Object
+   *
+   * @return  {Object}  [return description]
+   */
   skier = {
     direction: <number>5,
     mapX: <number>0,
@@ -62,6 +73,11 @@ export class GameComponent implements AfterViewInit {
     animation: <number>0
   };
 
+  /**
+   * The Rhino Object
+   *
+   * @return  {[type]}  [return description]
+   */
   rhino = {
     animation: <number>0,
     direction: <number>5,
@@ -78,12 +94,20 @@ export class GameComponent implements AfterViewInit {
   score = 0;
   shouldSave = <boolean> false;
 
+  /**
+   * Context for the Canvas Render
+   *
+   * @return  {Element}  [return description]
+   */
   context: CanvasRenderingContext2D;
 
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
   constructor(private _storageService: LocalStorageService) { }
 
+  /**
+   * Rendering game on load
+   */
   @HostListener('window:load')
   load() {
     this.render();
@@ -94,6 +118,11 @@ export class GameComponent implements AfterViewInit {
     this.init();
   }
 
+  /**
+   * Set game dimensions on inititalization
+   *
+   * @return  {void}  [return description]
+   */
   ngAfterViewInit(): void {
     $('canvas')
     .attr('width', this.gameWidth * window.devicePixelRatio)
@@ -104,6 +133,11 @@ export class GameComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Load the assets / images used in the game
+   *
+   * @return  {Promise<string>}  A promise with the loaded assests
+   */
   loadAssets(): Promise<string> {
     const assetPromises = [];
     const self = this;
@@ -126,6 +160,11 @@ export class GameComponent implements AfterViewInit {
     return $.when.apply($, assetPromises);
   }
 
+  /**
+   * Place fist obstacles in the game
+   *
+   * @return  {void}  [return description]
+   */
   placeInitialObstacles(): void {
     const numberObstacles = Math.ceil(_.random(5, 7) * (this.gameWidth / 800) * (this.gameHeight / 500));
     const minX = -50;
@@ -144,6 +183,13 @@ export class GameComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Place a new obstacle in the game
+   *
+   * @param   {integer}  direction  [direction description]
+   *
+   * @return  {void}               [return description]
+   */
   placeNewObstacle(direction): void {
     const shouldPlaceObstacle = _.random(1, 8);
     if (shouldPlaceObstacle !== 8) {
@@ -179,6 +225,16 @@ export class GameComponent implements AfterViewInit {
     }
   }
 
+  /**
+   * Place an onstacle in a random position. Implements placeNewObstacle
+   *
+   * @param   {integer}  minX  [minX description]
+   * @param   {integer}  maxX  [maxX description]
+   * @param   {integer}  minY  [minY description]
+   * @param   {integer}  maxY  [maxY description]
+   *
+   * @return  {void}          [return description]
+   */
   placeRandomObstacle(minX, maxX, minY, maxY): void {
     const obstacleIndex = _.random(0, this.obstacleTypes.length - 1);
 
@@ -191,6 +247,16 @@ export class GameComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Calculates a new position with no obstacle
+   *
+   * @param   {integer}  minX  [minX description]
+   * @param   {integer}  maxX  [maxX description]
+   * @param   {integer}  minY  [minY description]
+   * @param   {integer}  maxY  [maxY description]
+   *
+   * @return  {any}           [return description]
+   */
   calculateOpenPosition(minX, maxX, minY, maxY): any {
     const x = _.random(minX, maxX);
     const y = _.random(minY, maxY);
@@ -209,6 +275,11 @@ export class GameComponent implements AfterViewInit {
     }
   }
 
+  /**
+   * Move the skier depending on the skier direction
+   *
+   * @return  {void}  [return description]
+   */
   moveSkier(): void {
     switch (this.skier.direction) {
       case 2:
@@ -231,10 +302,20 @@ export class GameComponent implements AfterViewInit {
     }
   }
 
+  /**
+   * Calculate a running total
+   *
+   * @return  {void}  [return description]
+   */
   calculateScore(): void {
       this.score += 1 ;
   }
 
+  /**
+   * Save the score in the
+   *
+   * @return  {void}  [return description]
+   */
   saveScore(): void {
     if (this.shouldSave) {
       this._storageService.set(_.toString(_.now()), _.toString(this.score));
@@ -265,6 +346,11 @@ export class GameComponent implements AfterViewInit {
     }
   }
 
+  /**
+   * Get the Skier Image based in the skier direction
+   *
+   * @return  {string}  The name of the asset
+   */
   getSkierAsset(): string {
     let skierAssetName = '';
 
@@ -292,6 +378,14 @@ export class GameComponent implements AfterViewInit {
     return skierAssetName;
   }
 
+  /**
+   * Get the Rhino Image based in the skier direction
+   *
+   * @return  {string}  [return description]
+   *
+   * TODO:
+   * - Add Rhino to game
+   */
   getRhinoAsset(): string {
     let rhinoAssetName = '';
     switch (this.rhino.animation) {
@@ -321,6 +415,11 @@ export class GameComponent implements AfterViewInit {
     return rhinoAssetName;
   }
 
+  /**
+   * Get the Skier Image of them jumping
+   *
+   * @return  {string}  The name of the image
+   */
   getJumpAsset(): string {
     let skierAssetName = '';
     switch (Math.floor(this.skier.animation / 10)) {
@@ -346,6 +445,11 @@ export class GameComponent implements AfterViewInit {
     return skierAssetName;
   }
 
+  /**
+   * Animate the skier jumping or skiing
+   *
+   * @return  {void}  [return description]
+   */
   drawSkier(): void {
     let skierAssetName = '';
     if (this.skier.jump) {
@@ -364,6 +468,11 @@ export class GameComponent implements AfterViewInit {
     // this.context.save();
   }
 
+  /**
+   * Add the obstacles to the game
+   *
+   * @return  {void}  [return description]
+   */
   drawObstacles(): void {
     const newObstacles = [];
     const self = this;
@@ -384,6 +493,11 @@ export class GameComponent implements AfterViewInit {
     this.obstacles = newObstacles;
   }
 
+  /**
+   * Check if the Skier has hit an obstacle
+   *
+   * @return  {void}  [return description]
+   */
   checkIfSkierHitObstacle(): void {
     const skierAssetName = this.getSkierAsset();
     const skierImage = this.loadedAssets[skierAssetName];
@@ -434,6 +548,10 @@ export class GameComponent implements AfterViewInit {
     this.context.clearRect(0, 0, this.gameWidth, this.gameHeight);
   }
 
+  /**
+   * Bind Keyboard Inputs to the Skier's behaviour
+   * @param event
+   */
   @HostListener('window:keyup', ['$event'])
 
   keyEvent(event: KeyboardEvent) {
@@ -504,6 +622,11 @@ export class GameComponent implements AfterViewInit {
 
   }
 
+  /**
+   * Start the gameloop
+   *
+   * @return  {void}  [return description]
+   */
   init(): void {
     const self = this;
 
