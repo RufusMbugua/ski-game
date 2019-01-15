@@ -34,9 +34,9 @@ This is an iteration of the Ski Game translated into Angular 7 to allow for test
 - Fixed bug when Skier Crashes while moving to the left
 - Tests
 
-## TODO
+## TODO / Known Bugs
 
-- Rhino
+- Rhino Movement
 - Save Score
 - Accurate Speed Detection
 

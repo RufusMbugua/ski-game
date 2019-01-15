@@ -9,4 +9,4 @@ This object handles the obstacles rendered in the game.
 - placeRandomObstacle()
 - calculateOpenPosition()
 - drawObstacles()
-- 
+
