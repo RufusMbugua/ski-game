@@ -22,12 +22,21 @@ This is an iteration of the Ski Game translated into Angular 7 to allow for test
 | RIGHT | Move the skier to the right |
 | UP | Move the skier upwards |
 | DOWN | Move the skier downwards |
+| SPACEBAR | Pause |
 
   _Note that all movements are relative to the skier's current direction._
+
+## Features Added 
+
+- Ski Ramp and Jumping
+- Motion Detection
+- Pause
+- Fixed bug when Skier Crashes while moving to the left
+- Tests
 
 ## TODO
 
 - Rhino
 - Save Score
-- Tests
+- Accurate Speed Detection
 

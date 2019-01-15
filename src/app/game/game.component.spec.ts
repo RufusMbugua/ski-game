@@ -35,4 +35,5 @@ describe('GameComponent', () => {
     component = fixture.componentInstance;
     expect(typeof(component.skier.direction)).toBe('number');
   });
+
 });

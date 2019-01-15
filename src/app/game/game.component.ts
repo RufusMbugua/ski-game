@@ -1,4 +1,5 @@
-import { Component, AfterViewInit, HostListener, Injectable, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, HostListener, Injectable, ViewChild, ElementRef , DoCheck,
+  KeyValueDiffers, KeyValueDiffer } from '@angular/core';
 
 import * as _ from 'lodash';
 import * as $ from 'jquery';
@@ -30,7 +31,7 @@ export enum KEY_CODE {
 /**
  * GameComponent Class
  */
-export class GameComponent implements AfterViewInit {
+export class GameComponent implements AfterViewInit, DoCheck {
 
   assetImages = {
     'skierCrash': '../assets/img/skier_crash.png',
@@ -69,7 +70,8 @@ export class GameComponent implements AfterViewInit {
     mapY: <number>0,
     speed: <number>4,
     jump: <boolean>false,
-    animation: <number>0
+    animation: <number>0,
+    motion: <boolean>false
   };
 
   /**
@@ -92,6 +94,7 @@ export class GameComponent implements AfterViewInit {
   gameHeight = window.innerHeight;
   score = 0;
   shouldSave = <boolean> false;
+  obstacleChanges = <number>0;
 
   /**
    * Context for the Canvas Render
@@ -102,7 +105,11 @@ export class GameComponent implements AfterViewInit {
 
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
-  constructor() { }
+  differ: KeyValueDiffer<string, any>;
+
+  constructor(private differs: KeyValueDiffers) {
+    this.differ = this.differs.find({}).create();
+   }
 
   /**
    * Rendering game on load
@@ -132,6 +139,16 @@ export class GameComponent implements AfterViewInit {
     });
   }
 
+  ngDoCheck(): void {
+    const change = this.differ.diff(this);
+    if (change) {
+      change.forEachChangedItem(item => {
+        if (item.key === 'obstacles' && this.obstacleChanges > 1 ) {
+          this.skier.motion = true;
+        }
+      });
+    }
+  }
   /**
    * Load the assets / images used in the game
    *
@@ -180,6 +197,7 @@ export class GameComponent implements AfterViewInit {
       const obstacleImage = self.loadedAssets[obstacle.type];
       return obstacle.y + obstacleImage.height;
     });
+    this.obstacleChanges++;
   }
 
   /**
@@ -280,6 +298,7 @@ export class GameComponent implements AfterViewInit {
    * @return  {void}  [return description]
    */
   moveSkier(): void {
+
     switch (this.skier.direction) {
       case 2:
         this.skier.mapX -= Math.round(this.skier.speed / 1.4142);
@@ -486,9 +505,26 @@ export class GameComponent implements AfterViewInit {
       self.context.drawImage(obstacleImage, x, y, obstacleImage.width, obstacleImage.height);
 
       newObstacles.push(obstacle);
+
     });
 
-    this.obstacles = newObstacles;
+    /**
+     * Chacks if the obstacle arrays are equivalent
+     *
+     * @return  {[type]}  [return description]
+     *
+     * TODO:
+     * - Issue with animation checking more than once in every frame
+     */
+    if (!_.isEqual(this.obstacles, newObstacles)) {
+      this.obstacles = newObstacles;
+      this.obstacleChanges++;
+      this.skier.motion = true;
+    } else {
+      this.skier.motion = false;
+    }
+
+
   }
 
   /**
@@ -530,6 +566,7 @@ export class GameComponent implements AfterViewInit {
         this.skier.direction = 0;
         this.skier.speed = 8;
         this.shouldSave = true;
+        this.skier.motion = false;
         return;
     } else {
       this.calculateScore();
@@ -544,6 +581,16 @@ export class GameComponent implements AfterViewInit {
   }
   clearCanvas(): void {
     this.context.clearRect(0, 0, this.gameWidth, this.gameHeight);
+  }
+
+  checkSpeed(): void {
+    console.log(this.skier.motion);
+    if (this.skier.motion) {
+      this.skier.speed += 0.5;
+    } else {
+      this.skier.speed = 8;
+    }
+    // console.log(this.skier.motion);
   }
 
   /**
@@ -595,9 +642,6 @@ export class GameComponent implements AfterViewInit {
   gameLoop(): void {
     this.context.save();
 
-    // Speed up with every frame
-    this.skier.speed += 0.05;
-
     // Retina support
     this.context.scale(window.devicePixelRatio, window.devicePixelRatio);
 
@@ -612,6 +656,8 @@ export class GameComponent implements AfterViewInit {
     this.drawSkier();
 
     this.drawObstacles();
+
+    this.checkSpeed();
 
     this.context.restore();
 
@@ -631,6 +677,7 @@ export class GameComponent implements AfterViewInit {
     this.loadAssets().then(function () {
       self.placeInitialObstacles();
       requestAnimationFrame(() => self.gameLoop());
+      self.skier.motion = false;
     }).catch(function (err) {
       console.log(err);
     });
