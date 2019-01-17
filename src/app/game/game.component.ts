@@ -11,7 +11,8 @@ export enum KEY_CODE {
   LEFT_ARROW = 37,
   UP_ARROW = 38,
   DOWN_ARROW = 40,
-  SPACE_BAR = 32
+  SPACE_BAR = 32,
+  SHIFT_LEFT = 16
 }
 
 /**
@@ -634,6 +635,9 @@ export class GameComponent implements AfterViewInit, DoCheck {
         break;
       case KEY_CODE.SPACE_BAR:
         alert('Game paused');
+        break;
+      case KEY_CODE.SHIFT_LEFT:
+        this.skier.jump = true;
         break;
     }
   }

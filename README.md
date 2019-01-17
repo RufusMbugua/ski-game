@@ -23,6 +23,7 @@ This is an iteration of the Ski Game translated into Angular 7 to allow for test
 | UP | Move the skier upwards |
 | DOWN | Move the skier downwards |
 | SPACEBAR | Pause |
+| SHIFT LEFT | Jump |
 
   _Note that all movements are relative to the skier's current direction._
 
